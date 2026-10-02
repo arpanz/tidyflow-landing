@@ -1,0 +1,354 @@
+@import 'tailwindcss';
+
+/*
+ * Brand: TidyFlow's blue and Inter come from the app (Navbar.tsx, DESIGN.md). The `app-*` colours are the
+ * app's own dark theme, used only where the page shows TidyFlow's UI. The night sky is the landing page's.
+ */
+@theme {
+  --font-sans: 'Inter', -apple-system, system-ui, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-display: 'Instrument Serif', ui-serif, Georgia, serif;
+
+  --color-brand: #0075de;
+  --color-brand-pressed: #005bab;
+  --color-brand-bright: #4ea1ff;
+
+  --color-night: #05060b;
+  --color-night-raised: #0b0d14;
+  --color-mist: #a4a9ba;
+  --color-mist-dim: #7d8396;
+
+  --color-app-bg: #191919;
+  --color-app-surface: #202020;
+  --color-app-raised: #282828;
+  --color-app-border: #2e2e2e;
+  --color-app-muted: #9b9a97;
+  --color-app-blue: #2383e2;
+  --color-app-ok: #4ade80;
+  --color-app-warn: #fb923c;
+
+  --ease-soft: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-night font-sans text-white antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+
+  ::selection {
+    background: rgb(78 161 255 / 0.35);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand-bright);
+    outline-offset: 3px;
+  }
+}
+
+@layer components {
+  .skip-link {
+    position: fixed;
+    left: 1rem;
+    top: -4rem;
+    z-index: 100;
+    border-radius: 9999px;
+    background: white;
+    color: black;
+    padding: 0.6rem 1rem;
+    font-weight: 600;
+    transition: top 0.2s;
+  }
+  .skip-link:focus {
+    top: 1rem;
+  }
+
+  .display {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 1.02;
+  }
+
+  /* Pill buttons follow the app's DESIGN.md (marketing CTAs are fully rounded). */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    height: 2.875rem;
+    padding-inline: 1.35rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    transition:
+      background-color 0.2s,
+      border-color 0.2s;
+  }
+
+  .btn-primary {
+    background: var(--color-brand);
+    color: white;
+  }
+  .btn-primary:hover {
+    background: #0068c6;
+  }
+  .btn-primary:active {
+    background: var(--color-brand-pressed);
+  }
+
+  .btn-ghost {
+    color: white;
+    border: 1px solid rgb(255 255 255 / 0.16);
+  }
+  .btn-ghost:hover {
+    background: rgb(255 255 255 / 0.06);
+    border-color: rgb(255 255 255 / 0.28);
+  }
+
+  .kbd {
+    display: inline-grid;
+    place-items: center;
+    min-width: 1.3rem;
+    height: 1.3rem;
+    padding-inline: 0.3rem;
+    border-radius: 0.3rem;
+    border: 1px solid rgb(255 255 255 / 0.16);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--color-app-muted);
+  }
+
+  /* Scroll reveal: one gentle lift, once. */
+  .reveal {
+    opacity: 0;
+    translate: 0 14px;
+    transition:
+      opacity 0.8s var(--ease-soft),
+      translate 0.8s var(--ease-soft);
+    transition-delay: var(--delay, 0ms);
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  .fade-up {
+    opacity: 0;
+    animation: fade-up 0.8s var(--ease-soft) forwards;
+    animation-delay: var(--delay, 0ms);
+  }
+
+  /* The wizard */
+  .wizard-enter {
+    animation: wizard-enter 1.6s var(--ease-soft) 0.1s both;
+  }
+  .wizard-float {
+    animation: wizard-float 7s ease-in-out infinite;
+  }
+
+  .moon {
+    background: radial-gradient(circle at 36% 32%, #fbfaf6 0%, #e9e8e3 32%, #cdd1dc 65%, #a8afc6 100%);
+    box-shadow: 0 0 90px 10px rgb(205 215 255 / 0.18);
+  }
+  .moon::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background:
+      radial-gradient(circle at 64% 36%, rgb(130 138 165 / 0.3) 0 5%, transparent 5.6%),
+      radial-gradient(circle at 30% 64%, rgb(130 138 165 / 0.24) 0 8%, transparent 8.6%),
+      radial-gradient(circle at 72% 70%, rgb(130 138 165 / 0.2) 0 3.5%, transparent 4%),
+      radial-gradient(circle at 45% 22%, rgb(130 138 165 / 0.18) 0 2.6%, transparent 3%);
+  }
+
+  /* Wizard fly-by divider */
+  .flyby-wizard {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    opacity: 0;
+    translate: -9% -88%;
+  }
+  .flyby-trail {
+    position: absolute;
+    inset-inline: 0;
+    top: 50%;
+    height: 1px;
+    transform-origin: left;
+    transform: scaleX(0);
+    background: linear-gradient(90deg, transparent, rgb(159 208 255 / 0.55));
+  }
+  .is-flying .flyby-wizard {
+    animation: flyby 2.8s linear forwards;
+  }
+  .is-flying .flyby-trail {
+    animation: flyby-trail 2.8s linear forwards;
+  }
+
+  .caret::after {
+    content: '';
+    display: inline-block;
+    width: 2px;
+    height: 1.05em;
+    margin-left: 2px;
+    vertical-align: -0.18em;
+    background: currentColor;
+    animation: blink 1s steps(1) infinite;
+  }
+
+  .scanline {
+    animation: scan 2.4s var(--ease-soft) forwards;
+  }
+
+  .tree-in {
+    animation: tree-in 0.45s var(--ease-soft) both;
+    animation-delay: var(--delay, 0ms);
+  }
+
+  /*
+   * Product mockup: picking a callout outlines its parts of the screen and dims the other labelled parts.
+   * Regions are leaves (never nested) so dimming one can't hide another.
+   */
+  .mock [data-region] {
+    transition:
+      opacity 0.35s var(--ease-soft),
+      outline-color 0.35s var(--ease-soft);
+    outline: 1.5px solid transparent;
+    outline-offset: 2px;
+    border-radius: 0.375rem;
+  }
+  .mock[data-focus] [data-region] {
+    opacity: 0.4;
+  }
+  .mock[data-focus='confidence'] [data-region~='confidence'],
+  .mock[data-focus='rules'] [data-region~='rules'],
+  .mock[data-focus='dupes'] [data-region~='dupes'],
+  .mock[data-focus='rename'] [data-region~='rename'],
+  .mock[data-focus='edit'] [data-region~='edit'],
+  .mock[data-focus='apply'] [data-region~='apply'] {
+    opacity: 1;
+    outline-color: var(--color-brand-bright);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes wizard-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(-70px, 50px, 0) rotate(-8deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes wizard-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-1deg);
+  }
+  50% {
+    transform: translate3d(6px, -14px, 0) rotate(1deg);
+  }
+}
+
+@keyframes flyby {
+  0% {
+    left: 0%;
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes flyby-trail {
+  0% {
+    transform: scaleX(0);
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 0.3;
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes scan {
+  from {
+    top: 0%;
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  to {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes tree-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal {
+    opacity: 1;
+    translate: none;
+  }
+}
