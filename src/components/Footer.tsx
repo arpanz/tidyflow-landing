@@ -18,7 +18,7 @@ const COLUMNS = [
     title: 'Project',
     links: [
       { label: 'GitHub', href: site.repoUrl },
-      { label: 'Releases', href: `${site.repoUrl}/releases` },
+      { label: 'Releases', href: site.releasesUrl },
       { label: 'Report an issue', href: site.issuesUrl },
     ],
   },

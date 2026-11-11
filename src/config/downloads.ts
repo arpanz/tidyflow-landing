@@ -17,7 +17,7 @@ export type DownloadOption = {
  * No desktop build is published yet, so empty URLs fall back to the GitHub releases page.
  */
 export const downloads = {
-  fallbackUrl: `${site.repoUrl}/releases`,
+  fallbackUrl: site.releasesUrl,
 
   /** Which option the big button uses for each detected OS. */
   primary: {
