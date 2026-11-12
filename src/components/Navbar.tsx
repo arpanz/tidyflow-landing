@@ -81,16 +81,16 @@ export function Navbar() {
       <nav aria-label="Main" className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:h-20 lg:px-12 xl:px-[4.5rem]">
         <a href="#top" className="-m-1 flex items-center gap-2.5 rounded-lg p-1" onClick={() => setOpen(false)}>
           <WizardLogo className="w-9 lg:w-11" />
-          <span className="text-[1.1rem] font-semibold tracking-tight lg:text-[1.6rem]">TidyFlow</span>
+          <span className="text-[1.1rem] font-semibold tracking-tight xl:text-[1.6rem]">TidyFlow</span>
         </a>
 
-        <ul className="hidden items-center gap-2 md:flex lg:gap-6">
+        <ul className="hidden items-center gap-1 md:flex xl:gap-5">
           {navLinks.map((link) => (
             <li key={link.href}>
               <a
                 href={link.href}
                 aria-current={active === link.href ? 'location' : undefined}
-                className={`relative rounded-md px-3 py-2 text-[0.95rem] transition-colors ${
+                className={`relative rounded-md px-3 py-2 text-[0.95rem] whitespace-nowrap transition-colors ${
                   active === link.href ? 'text-[var(--h-ink)]' : 'text-[var(--h-ink-2)] hover:text-[var(--h-ink)]'
                 }`}
               >
@@ -107,7 +107,7 @@ export function Navbar() {
         </ul>
 
         <div className="flex items-center gap-2 lg:gap-3">
-          <a href={site.repoUrl} className="btn-outline hidden h-11 px-5 text-[0.95rem] lg:inline-flex">
+          <a href={site.repoUrl} className="btn-outline hidden h-11 px-5 text-[0.95rem] xl:inline-flex">
             <Github className="size-5" />
             GitHub
             <Star className="size-4" />

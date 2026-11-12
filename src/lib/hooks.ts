@@ -23,10 +23,6 @@ export function useReducedMotion() {
   )
 }
 
-export function prefersReducedMotion() {
-  return window.matchMedia(REDUCED_MOTION).matches
-}
-
 type InViewOptions = { once?: boolean; rootMargin?: string; threshold?: number }
 
 export function useInView(
@@ -50,15 +46,4 @@ export function useInView(
   }, [ref, once, rootMargin, threshold])
 
   return inView
-}
-
-export const clamp = (v: number, min = 0, max = 1) => Math.min(max, Math.max(min, v))
-export const lerp = (a: number, b: number, t: number) => a + (b - a) * t
-export const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
-
-/** How far `el` has scrolled through the viewport: 0 when its top hits the top, 1 when its bottom hits the bottom. */
-export function stickyProgress(el: Element) {
-  const rect = el.getBoundingClientRect()
-  const travel = rect.height - window.innerHeight
-  return travel <= 0 ? 1 : clamp(-rect.top / travel)
 }

@@ -9,7 +9,8 @@ import { DownloadButton } from './ui'
 const delay = (ms: number) => ({ '--delay': `${ms}ms` }) as CSSProperties
 
 const PROMISES = ['Local OCR', 'Secrets redacted', 'Safe copy by default']
-const STEPS = ['Scan', 'Understand', 'Categorize', 'Suggest', 'You decide']
+// The app's own steps: Folder → Plan → Review → Done.
+const STEPS = ['Pick a folder', 'Read every file', 'Agree on a plan', 'Review', 'Done, undoable']
 const RAIL = ['01', '02', '03']
 
 type Row = {

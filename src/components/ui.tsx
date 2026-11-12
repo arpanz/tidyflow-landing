@@ -106,5 +106,6 @@ export function DownloadButton({
 }
 
 export function Container({ className = '', children }: { className?: string; children: ReactNode }) {
-  return <div className={`mx-auto w-full max-w-6xl px-4 sm:px-6 ${className}`}>{children}</div>
+  // Same width and gutters as the hero and navbar, so every section lines up with the headline.
+  return <div className={`mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-12 xl:px-[4.5rem] ${className}`}>{children}</div>
 }

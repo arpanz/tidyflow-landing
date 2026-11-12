@@ -1,120 +1,73 @@
 import { useEffect, useRef, useState } from 'react'
-import { clamp, useReducedMotion } from '../lib/hooks'
+import { AppShot, type ShotName } from './AppShot'
 import { Accent, Container, Reveal, SectionHeading } from './ui'
 
-// Stage names follow the pipeline in TidyFlow's README.
-const STEPS = [
+// The app's own flow (Folder → Plan → Review → Done), worded after TidyFlow's README.
+const STEPS: { title: string; body: string; shot: ShotName; tag: string }[] = [
   {
-    title: 'Scan',
-    body: 'TidyFlow walks the folder you point it at, skipping anything your ignore rules exclude. It reads metadata, makes thumbnails and fingerprints every file for duplicate checks.',
-    stages: 'scanner → metadata → deduplication',
+    title: 'Pick a folder',
+    body: 'Downloads, Desktop or any folder you like. Organized files go to a new Organized folder inside it, unless you choose somewhere else.',
+    shot: 'home',
+    tag: 'Folder',
   },
   {
-    title: 'Understand',
-    body: 'Text comes out of PDFs, Office files and images, with OCR on your machine. Rules place the obvious files. The rest go to your chosen model in batches of 15 to 40, with credentials redacted.',
-    stages: 'text extraction → OCR → heuristic rules → LLM classification',
+    title: 'It reads every file',
+    body: 'Contents, not just names, including the text inside scans and screenshots. You see each stage as it happens, with a live count of files placed.',
+    shot: 'sorting',
+    tag: 'Reading',
+  },
+  {
+    title: 'Agree on a plan',
+    body: 'Folders built from your files, not a template. Rename, remove or add any of them, set the detail from Fewer to Detailed, or ask for changes in plain English.',
+    shot: 'plan',
+    tag: 'Plan',
   },
   {
     title: 'Review',
-    body: 'Every proposal lands on the Review & Apply screen with a category, a confidence score and a reason. Change what is wrong, triage what is unclear, select what you want.',
-    stages: 'web UI review',
+    body: 'Files it is sure about are already placed. The few it isn’t sure about wait for you, and anything you leave unchecked stays where it is.',
+    shot: 'review',
+    tag: 'Review',
   },
   {
-    title: 'Organize',
-    body: 'Selected files are copied into the new structure and verified with SHA-256. The originals stay where they were unless you choose to move them.',
-    stages: 'safe execution',
+    title: 'Done, and undoable',
+    body: 'Files are copied into Organized and every copy is checked. Your originals are untouched, and one click puts everything back.',
+    shot: 'done',
+    tag: 'Done',
   },
-]
-
-const COMMANDS = [
-  { cmd: 'python3 -m src.cli serve --host 127.0.0.1 --port 8000', what: 'Start the web UI' },
-  { cmd: 'python3 -m src.cli run --input-dir <folder> --output-dir <folder>', what: 'Run the whole pipeline' },
-  { cmd: 'python3 -m src.cli inventory --input-dir <folder> --output-dir <folder>', what: 'Offline inventory' },
-  { cmd: 'python3 -m src.cli apply --decisions <file.csv> --output-dir <folder> --confirm', what: 'Apply saved decisions' },
 ]
 
 export function HowItWorks() {
-  const reduced = useReducedMotion()
   const [active, setActive] = useState(0)
-  const listRef = useRef<HTMLOListElement>(null)
-  const fillRef = useRef<HTMLDivElement>(null)
   const stepRefs = useRef<(HTMLLIElement | null)[]>([])
 
-  // Which step is crossing the middle of the screen.
+  // The step crossing the middle of the screen picks the screenshot.
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         for (const e of entries) if (e.isIntersecting) setActive(Number((e.target as HTMLElement).dataset.index))
       },
-      { rootMargin: '-48% 0px -48% 0px' },
+      { rootMargin: '-45% 0px -45% 0px' },
     )
     stepRefs.current.forEach((el) => el && observer.observe(el))
     return () => observer.disconnect()
   }, [])
 
-  // The rail fills as you read down the steps.
-  useEffect(() => {
-    const list = listRef.current!
-    const fill = fillRef.current!
-    if (reduced) {
-      fill.style.transform = 'scaleY(1)'
-      return
-    }
-    let raf = 0
-    const update = () => {
-      raf = 0
-      const r = list.getBoundingClientRect()
-      fill.style.transform = `scaleY(${clamp((window.innerHeight * 0.5 - r.top) / r.height)})`
-    }
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update)
-    }
-    update()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', onScroll)
-    return () => {
-      cancelAnimationFrame(raf)
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('resize', onScroll)
-    }
-  }, [reduced])
-
   return (
-    <section id="how-it-works" aria-labelledby="how-title" className="py-16 sm:py-24">
-      <Container className="grid grid-cols-1 gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-20">
-        <div className="lg:sticky lg:top-28 lg:self-start">
-          <SectionHeading
-            id="how-title"
-            eyebrow={{ n: '04', label: 'How it works' }}
-            title={
-              <>
-                What happens to <Accent>a folder.</Accent>
-              </>
-            }
-            description="The same four steps run whether you use the web UI or the command line."
-          />
-          <Reveal delay={150} className="mt-10">
-            <h3 className="mono-label text-[0.72rem] text-mist">From the command line</h3>
-            <dl className="mt-3 divide-y divide-white/[0.07] border-y border-white/[0.07]">
-              {COMMANDS.map((c) => (
-                <div key={c.what} className="py-3">
-                  <dt className="text-sm text-mist">{c.what}</dt>
-                  <dd className="mt-1 font-mono text-[0.75rem] break-words text-white/85">{c.cmd}</dd>
-                </div>
-              ))}
-            </dl>
-            <p className="mt-3 text-sm text-mist-dim">
-              TidyFlow also ships an MCP server that lets AI assistants list, copy, move and delete files, but only inside folders you
-              allow.
-            </p>
-          </Reveal>
-        </div>
+    <section id="how-it-works" aria-labelledby="how-title" className="py-20 sm:py-28">
+      <Container>
+        <SectionHeading
+          id="how-title"
+          eyebrow={{ n: '02', label: 'How it works' }}
+          title={
+            <>
+              From a messy folder to <Accent>an organized one.</Accent>
+            </>
+          }
+          description="The same few steps every time. Nothing on your disk changes until the last one, and that one can be undone."
+        />
 
-        <div className="relative">
-          <div aria-hidden="true" className="absolute top-3 bottom-3 left-[0.6875rem] w-px bg-white/[0.1]">
-            <div ref={fillRef} className="h-full w-full origin-top bg-[var(--h-accent)]" style={{ transform: 'scaleY(0)' }} />
-          </div>
-          <ol ref={listRef} className="relative space-y-12">
+        <div className="mt-14 grid grid-cols-1 gap-12 lg:mt-20 lg:grid-cols-[minmax(0,0.75fr)_minmax(0,1.5fr)] lg:gap-16">
+          <ol className="relative space-y-14 lg:space-y-0">
             {STEPS.map((step, i) => (
               <li
                 key={step.title}
@@ -122,27 +75,62 @@ export function HowItWorks() {
                   stepRefs.current[i] = el
                 }}
                 data-index={i}
-                className="relative pl-12"
+                className="lg:flex lg:min-h-[62vh] lg:items-center"
               >
-                <span
-                  aria-hidden="true"
-                  className={`absolute top-1 left-0 grid size-[1.375rem] place-items-center rounded-[3px] border font-mono text-[0.68rem] transition-colors duration-500 ${
-                    i <= active ? 'border-[var(--h-accent)] bg-[var(--h-accent)] text-[#fff]' : 'border-white/25 bg-night text-mist-dim'
-                  }`}
-                >
-                  {i + 1}
-                </span>
-                <Reveal>
-                  <h3 className="display text-[2.2rem] leading-none tracking-[-0.015em]">
-                    <span className="sr-only">Step {i + 1}: </span>
-                    {step.title}
-                  </h3>
-                  <p className="mt-2 max-w-lg leading-relaxed text-mist">{step.body}</p>
-                  <p className="mono-label mt-3 text-[0.66rem] text-mist-dim">{step.stages}</p>
+                <Reveal className="w-full">
+                  <div
+                    className={`border-l-2 pl-6 transition-colors duration-500 ${
+                      i === active ? 'border-[var(--h-accent)]' : 'border-white/[0.12]'
+                    }`}
+                  >
+                    <p className="mono-label flex items-center gap-3 text-[0.7rem] text-mist-dim">
+                      <span className={i === active ? 'text-[var(--h-accent)]' : ''}>{String(i + 1).padStart(2, '0')}</span>
+                      <span aria-hidden="true">·</span>
+                      {step.tag}
+                    </p>
+                    <h3 className="display mt-3 text-[2.2rem] leading-none tracking-[-0.015em] sm:text-[2.6rem]">
+                      <span className="sr-only">Step {i + 1}: </span>
+                      {step.title}
+                    </h3>
+                    <p className="mt-4 max-w-md leading-relaxed text-pretty text-mist">{step.body}</p>
+                  </div>
+                  {/* Phones and tablets: each step carries its own screen. */}
+                  <AppShot name={step.shot} className="mt-7 lg:hidden" />
                 </Reveal>
               </li>
             ))}
           </ol>
+
+          {/* Large screens: one window that follows the step you're reading. */}
+          <div aria-hidden="true" className="hidden lg:block">
+            <div className="sticky top-[calc(50vh-min(18vw,300px))]">
+              <div className="brackets relative p-2.5">
+                <div className="relative">
+                  {STEPS.map((step, i) => (
+                    <div
+                      key={step.shot}
+                      className={`transition-[opacity,translate] duration-700 ease-[var(--ease-soft)] ${
+                        i === 0 ? 'relative' : 'absolute inset-0'
+                      } ${i === active ? 'opacity-100' : 'pointer-events-none translate-y-2 opacity-0'}`}
+                    >
+                      <AppShot name={step.shot} eager={i === 0} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="mono-label mt-3 flex items-center justify-between px-2.5 text-[0.64rem] text-mist-dim">
+                <span>Fig. 02 — TidyFlow, {STEPS[active].tag.toLowerCase()} screen</span>
+                <span className="flex gap-1.5">
+                  {STEPS.map((s, i) => (
+                    <span
+                      key={s.tag}
+                      className={`h-1 w-5 transition-colors duration-500 ${i === active ? 'bg-[var(--h-accent)]' : 'bg-white/[0.14]'}`}
+                    />
+                  ))}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </Container>
     </section>

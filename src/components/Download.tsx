@@ -1,102 +1,121 @@
-import { useEffect, useRef } from 'react'
-import { downloadHref, downloads, type Platform } from '../config/downloads'
+import { useState } from 'react'
+import { downloadHref, downloads } from '../config/downloads'
 import { site } from '../config/site'
-import { clamp, useOS, useReducedMotion } from '../lib/hooks'
-import type { OS } from '../lib/os'
-import { Accent, Container, DownloadButton, Eyebrow, Reveal } from './ui'
-import { Github } from './Icons'
-import { WizardLogo } from './WizardLogo'
+import { useOS } from '../lib/hooks'
+import { Apple, Check, DownloadIcon, Github, Windows } from './Icons'
+import { Accent, Container, Reveal, SectionHeading } from './ui'
 
-const DETECTED: Record<Platform, OS | null> = { windows: 'windows', macos: 'macos', source: null }
+// "Run from source" in TidyFlow's README.
+const SOURCE = `git clone ${site.repoUrl}.git
+cd Tidyflow
+python3 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+npm --prefix frontend install && npm --prefix frontend run build
+python3 desktop.py`
 
 export function Download() {
   const os = useOS()
-  const reduced = useReducedMotion()
-  const sectionRef = useRef<HTMLElement>(null)
-  const wizardRef = useRef<HTMLDivElement>(null)
-
-  // The wizard crosses the moon as the section scrolls past.
-  useEffect(() => {
-    if (reduced) return
-    const section = sectionRef.current!
-    const wizard = wizardRef.current!
-    let raf = 0
-    const update = () => {
-      raf = 0
-      const r = section.getBoundingClientRect()
-      const p = clamp((window.innerHeight - r.top) / (window.innerHeight + r.height))
-      wizard.style.transform = `translate3d(${(p - 0.5) * 70}%, ${Math.sin(p * Math.PI) * -10 + 6}%, 0) rotate(${(p - 0.5) * -10}deg)`
-    }
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update)
-    }
-    update()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => {
-      cancelAnimationFrame(raf)
-      window.removeEventListener('scroll', onScroll)
-    }
-  }, [reduced])
 
   return (
-    <section id="download" ref={sectionRef} aria-labelledby="download-title" className="pt-10 pb-24 sm:pb-32">
+    <section id="download" aria-labelledby="download-title" className="py-20 sm:py-28">
       <Container>
-        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-16">
-          <Reveal>
-            <Eyebrow n="05" label="Download" className="mb-6" />
-            <h2 id="download-title" className="display text-[2.6rem] leading-[0.98] tracking-[-0.02em] text-balance sm:text-[3.8rem]">
+        <SectionHeading
+          id="download-title"
+          eyebrow={{ n: '06', label: 'Download' }}
+          title={
+            <>
               Bring a little magic to your <Accent>Downloads folder.</Accent>
-            </h2>
-            <p className="mt-5 max-w-lg leading-relaxed text-mist sm:text-lg">
-              TidyFlow is free and open source under the {site.license} license. For AI classification, add your own API key for
-              DeepSeek, OpenAI, Groq, Gemini, OpenRouter or any OpenAI-compatible endpoint. Without one, it sorts by rules alone.
-            </p>
+            </>
+          }
+          description={`Free and open source under the ${site.license} license. On first launch, open Settings to add an AI key if you want one.`}
+        />
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4">
-              <DownloadButton
-                variant="solid"
-                iconClassName="size-5"
-                className="h-[3.4rem] w-full px-8 text-[1.02rem] sm:w-auto"
-                unknownHref="#other-downloads"
-              />
-              <a href={site.repoUrl} className="btn-outline h-[3.4rem] px-8 text-[1.02rem]">
-                <Github className="size-5" />
-                View on GitHub
-              </a>
-            </div>
-
-            <h3 id="other-downloads" className="mono-label mt-12 text-[0.72rem] text-mist">
-              All downloads
-            </h3>
-            <ul className="mt-3 divide-y divide-white/[0.07] border-y border-white/[0.07]">
-              {downloads.options.map((option) => (
-                <li key={option.id}>
-                  <a href={downloadHref(option)} className="flex items-baseline justify-between gap-4 py-3.5 transition-colors hover:text-brand-bright">
-                    <span className="min-w-0">
-                      <span className="font-medium">{option.label}</span>
-                      {DETECTED[option.platform] === os && <span className="ml-2 text-sm text-mist-dim">detected</span>}
-                      {option.detail && <span className="mt-0.5 block text-sm text-mist">{option.detail}</span>}
+        <div className="mt-14 grid grid-cols-1 gap-5 lg:grid-cols-3">
+          {downloads.options.map((d, i) => {
+            const Icon = d.id === 'macos' ? Apple : Windows
+            const detected = d.id === os
+            return (
+              <Reveal key={d.id} delay={i * 80}>
+                <div
+                  className={`flex h-full flex-col rounded-md border bg-night-raised p-6 sm:p-7 ${
+                    detected ? 'border-[var(--h-accent)]/60' : 'border-white/[0.12]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="grid size-11 place-items-center rounded-[5px] border border-white/[0.12]">
+                      <Icon className="size-5" />
                     </span>
-                    <span aria-hidden="true" className="shrink-0 text-mist-dim">
-                      ↗
-                    </span>
+                    {detected && <span className="mono-label text-[0.64rem] text-[var(--h-accent)]">Your computer</span>}
+                  </div>
+                  <h3 className="display mt-6 text-[2.2rem] leading-none">{d.label}</h3>
+                  <p className="mt-2 font-mono text-[0.78rem] text-mist">{d.file}</p>
+                  <ol className="mt-5 space-y-2 text-[0.92rem] leading-relaxed text-mist">
+                    <li className="flex gap-2.5">
+                      <span className="mono-label pt-0.5 text-[0.66rem] text-mist-dim">1</span>
+                      {d.install}
+                    </li>
+                    <li className="flex gap-2.5">
+                      <span className="mono-label pt-0.5 text-[0.66rem] text-mist-dim">2</span>
+                      {d.firstRun}
+                    </li>
+                  </ol>
+                  <a href={downloadHref(d)} className={`${detected ? 'btn-solid' : 'btn-outline'} mt-auto h-12 w-full text-[0.95rem]`}>
+                    <DownloadIcon className="size-4" />
+                    Download for {d.id === 'macos' ? 'macOS' : 'Windows'}
                   </a>
-                </li>
-              ))}
-            </ul>
-          </Reveal>
+                  <p className="mt-3 text-center text-[0.78rem] text-mist-dim">The builds aren’t notarized yet, hence step 2.</p>
+                </div>
+              </Reveal>
+            )
+          })}
 
-          {/* The wizard silhouetted against the moon */}
-          <div aria-hidden="true" className="relative mx-auto w-full max-w-[20rem] sm:max-w-[24rem]">
-            <div className="moon relative aspect-square w-full rounded-full" />
-            <div className="absolute inset-0 grid place-items-center overflow-hidden rounded-full">
-              <div ref={wizardRef} className="w-[62%] will-change-transform">
-                <WizardLogo tone="black" className="w-full" />
-              </div>
-            </div>
-          </div>
+          <Reveal delay={160}>
+            <SourceCard />
+          </Reveal>
         </div>
       </Container>
     </section>
+  )
+}
+
+function SourceCard() {
+  const [copied, setCopied] = useState(false)
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(SOURCE)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 1600)
+    } catch {
+      /* clipboard blocked: the text is still selectable */
+    }
+  }
+
+  return (
+    <div className="flex h-full flex-col rounded-md border border-white/[0.12] bg-night-raised p-6 sm:p-7">
+      <div className="flex items-center justify-between">
+        <span className="grid size-11 place-items-center rounded-[5px] border border-white/[0.12]">
+          <Github className="size-5" />
+        </span>
+        <button type="button" onClick={copy} className="mono-label text-[0.64rem] text-mist transition-colors hover:text-white">
+          {copied ? (
+            <span className="flex items-center gap-1 text-app-ok">
+              <Check className="size-3" /> Copied
+            </span>
+          ) : (
+            'Copy'
+          )}
+        </button>
+      </div>
+      <h3 className="display mt-6 text-[2.2rem] leading-none">From source</h3>
+      <p className="mt-2 font-mono text-[0.78rem] text-mist">Python 3.10+ · Node.js 18+</p>
+      <pre className="mt-5 overflow-x-auto rounded-[4px] border border-white/[0.08] bg-night p-3.5 font-mono text-[0.68rem] leading-[1.75] text-white/85">
+        {SOURCE}
+      </pre>
+      <p className="mt-3 mb-6 text-[0.78rem] text-mist-dim">On Windows, activate with venv\Scripts\activate.</p>
+      <a href={site.repoUrl} className="btn-outline mt-auto h-12 w-full text-[0.95rem]">
+        <Github className="size-4" />
+        View on GitHub
+      </a>
+    </div>
   )
 }

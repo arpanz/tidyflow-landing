@@ -17,36 +17,38 @@ npm run preview  # serve the build locally
 
 | What | Where |
 | --- | --- |
-| Download links. Empty ones fall back to the GitHub releases page. | `src/config/downloads.ts` |
-| Repo URL, issues link, tagline | `src/config/site.ts` |
+| Download links. Empty ones send people to the GitHub releases page. | `src/config/downloads.ts` |
+| Repo, issues and releases links, tagline | `src/config/site.ts` |
 
 The download button detects Windows / macOS and picks `downloads.primary.windows` / `.macos`; anything else gets
-"Download TidyFlow" and is sent to the list of all downloads.
+"Download TidyFlow" and is sent to the download section.
 
 ## Content rules
 
 Everything the page says about TidyFlow should be checkable against the app's repo:
 
-- The Review & Apply recreation (`Product.tsx`) and Quick Triage demo copy labels and behaviour from the app's
-  `ReviewView.tsx` and `QuickTriageModal.tsx`. If those change, update the page.
-- Thresholds come from the app's `config.yaml` (85% confidence, Hamming distance 8).
-- CLI commands come from the README. Demo data (file names, counts, confidence values) is sample data and is shown as such.
+- Copy follows the app's README (How it works, What makes it different, Privacy, Install, Command line) and its
+  release notes. If those change, update the page.
+- App screens in `src/assets/app/` are the README's `assets/screenshots/`, cropped to the window. The app ships no
+  dark Done screen, so `done-dark.webp` is made from the light one.
+- File names and counts in the hero card, the features sketches and the card deck are sample data.
 - No testimonials, user counts, logos or team details unless they are real.
 
 ## Page structure
 
 `src/App.tsx` assembles the sections in `src/components/`:
 
-- `Navbar`: sticky, highlights the current section, mobile menu
-- `Hero`: headline, OS-aware download button, the wizard with a sparkle trail from the broom
-- `Product`: the Review & Apply screen with six callouts that highlight its parts
-- `Features`: five working demos in `components/features/` (Organization Architect, duplicates, OCR + redaction, Quick Triage, copy + verify)
-- `WizardFlight`: scroll-driven scene where the wizard flies past and scattered files settle into folders
-- `HowItWorks`: Scan → Understand → Review → Organize, plus the CLI commands
-- `WizardFlyby`: a divider the wizard crosses once
-- `Download`, `Footer`
+- `Navbar`: fixed, highlights the current section, light/dark toggle, mobile menu
+- `Hero`: the wizard artwork (light and dark), headline, OS-aware download button, review card
+- `HowItWorks`: the app's flow (folder, reading, plan, review, done) with its real screens, light or dark to match the page
+- `Features`: what makes it different, six cards with small sketches
+- `ReviewWays`: card review, search, renaming and plain-English edits, with a small card deck you can click through
+- `Privacy`: what stays on the computer and what is sent when an AI key is set
+- `Download`: macOS, Windows and run-from-source
+- `Faq`, `Footer`
 
-With `prefers-reduced-motion`, animations stop and scroll scenes render their finished state.
+The theme follows the OS until the visitor picks one (`src/lib/theme.ts`). With `prefers-reduced-motion`,
+animations stop.
 
 ## Brand assets
 
@@ -58,9 +60,6 @@ Copied (not linked) from the TidyFlow repo's `frontend/`:
 | `src/assets/brand/wizard-white.webp`, `wizard-black.webp` | Derived from the logo: the original sits on an opaque white plate, so these are transparent, trimmed cutouts |
 | `public/favicon*`, `apple-touch-icon.png`, `web-app-manifest-*.png`, `site.webmanifest` | `frontend/public/` |
 
-Use `<WizardLogo />` (`tone="white"` by default, `"black"` for light backgrounds). `src/lib/brand.ts` holds the
-image's intrinsic size and the point where the broom's bristles end, which the sparkle trails start from.
-
-Type and colour live in `src/index.css`: Instrument Serif for headings, Inter (the app's font) for text, JetBrains
-Mono for file names and commands. The app's blue (`#0075de`) is the only accent on the page; the `app-*` colours are
-TidyFlow's own dark theme, used only inside the recreated app screens.
+`<WizardLogo />` picks the white or black cutout from the theme. Type and colour live in `src/index.css`:
+Instrument Serif for headings, Inter (the app's font) for text, JetBrains Mono for labels, file names and commands.
+Light mode flips the shared colour tokens, so components use `text-white`, `bg-night` and friends in both themes.
